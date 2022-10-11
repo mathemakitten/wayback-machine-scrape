@@ -25,9 +25,11 @@ class webCrawler:
         # relative links, Nones, mailtos http:// https://
         for l in links:
             # special conditions added for CIA World Factbook
-            if l.split(".")[-1].lower() not in ['jpg', 'pdf'] and 'the-world-factbook' in l and 'archives' not in l:
+            if l.split(".")[-1].lower() not in ['jpg',
+                                                'pdf'] and 'the-world-factbook' in l and 'archives' not in l and 'locator-map' not in l:
                 if l and l.startswith('/'):  # relative link
-                    links_to_return.append(f"{urlparse(url).scheme}://{urlparse(url).hostname.rstrip('/')}{l.rstrip('/')}")
+                    links_to_return.append(
+                        f"{urlparse(url).scheme}://{urlparse(url).hostname.rstrip('/')}{l.rstrip('/')}")
                 elif l and (l.startswith('http://') or l.startswith('https://')):
                     links_to_return.append(l.rstrip('/'))
         return list(set(links_to_return))
@@ -63,6 +65,7 @@ class webCrawler:
 
 if __name__ == '__main__':
     import time
+
     st = time.time()
     wc = webCrawler('https://www.cia.gov/the-world-factbook/')
     # wc = webCrawler('https://mathemakitten.dev')
