@@ -8,6 +8,7 @@ converted to Pandas and then Parquet on disk.
 import requests
 from bs4 import BeautifulSoup
 import json
+from pathlib import Path
 
 # api = 'http://archive.org/wayback/available?url=example.com'
 
@@ -18,8 +19,15 @@ timestamps = ['20220501', '20220601', '20220801']  # internet archive format is 
 
 txt = ""
 # TODO: multithread this; each worker picks up a (timestamp, page) tuple and pings the API
-for i, page in enumerate(pages):
+
+for i, page in enumerate(pages[0:2]):
+
+    page_id = page.rsplit('/', 1)[-1]
+
     for t in timestamps:
+
+        print(f"Scraping time {t}, page {page}")
+
         x = requests.get(f'http://archive.org/wayback/available?url={page}&timestamp={t}')
         metadata_dict = json.loads(x.text)
         closest_timestamp = metadata_dict['timestamp']
@@ -41,7 +49,7 @@ for i, page in enumerate(pages):
             else:
                 txt += (f"{p.get_text()}")
 
-        """
-        todo: for each timestamped snapshot, get the text which is different than the previous bit and where it should
-        correspond to, if any 
-        """
+        page_path = f"factbook/{t}/{page_id}/"
+        Path(page_path).mkdir(parents=True, exist_ok=True)
+        with open(f'{page_path}text.txt', 'w') as f:
+            f.write(txt)
