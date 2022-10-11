@@ -9,17 +9,17 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
-api = 'http://archive.org/wayback/available?url=example.com'
+# api = 'http://archive.org/wayback/available?url=example.com'
 
 with open('/home/helen_huggingface_co/wayback-machine-scrape/links_scraped_cia_world_factbook.txt', 'r') as f:
     pages = f.read().split('\n')
 
-timestamps = ['20220501', '20220601', '20220801'] # internet archive format is YYYYMMDDhhmmss
+timestamps = ['20220501', '20220601', '20220801']  # internet archive format is YYYYMMDDhhmmss
 
 txt = ""
 # TODO: multithread this; each worker picks up a (timestamp, page) tuple and pings the API
-for t in timestamps:
-    for i, page in enumerate(pages):
+for i, page in enumerate(pages):
+    for t in timestamps:
         x = requests.get(f'http://archive.org/wayback/available?url={page}&timestamp={t}')
         metadata_dict = json.loads(x.text)
         closest_timestamp = metadata_dict['timestamp']
@@ -30,7 +30,18 @@ for t in timestamps:
         soup = BeautifulSoup(html, "html.parser")
 
         para = soup.find_all(["p", "h2", "h3"])
-        txt += "".join([str(i) for i in para]) + '\n\n\n'  # figure out how to format text bc headers all over the place
+        # txt += "".join([str(i) for i in para]) + '\n\n\n'  # figure out how to format text bc headers all over the place
 
-        if i == 20:
-            break
+        for br in soup.find_all("br"):
+            br.replace_with("\n")
+
+        for p in para:
+            if p.name == 'h2':
+                txt += (f"\n\nTopic: {p.get_text()}")
+            else:
+                txt += (f"{p.get_text()}")
+
+        """
+        todo: for each timestamped snapshot, get the text which is different than the previous bit and where it should
+        correspond to, if any 
+        """
