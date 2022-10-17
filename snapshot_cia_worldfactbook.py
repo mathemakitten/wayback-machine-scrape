@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 import json
 from pathlib import Path
 import concurrent.futures
+import time
 
 
 # api = 'http://archive.org/wayback/available?url=example.com'
@@ -18,12 +19,12 @@ import concurrent.futures
 class SnapshotOverTime:
 
     def __init__(self):
-        self.timestamps = ['20220501', '20220601', '20220801']  # internet archive format is YYYYMMDDhhmmss
+        self.timestamps = ['20220901'] #['20220501', '20220601', '20220801']  # internet archive format is YYYYMMDDhhmmss
         with open('/home/helen_huggingface_co/wayback-machine-scrape/links_scraped_cia_world_factbook.txt', 'r') as f:
             pages = set(f.read().split('\n'))
         self.pages_queue = queue.Queue()
-        [self.pages_queue.put(i) for i in pages]
-        print(f"Number of pages in queue: {len(pages)}")
+        [self.pages_queue.put(i) for i in pages if i != ' ' and '#' not in i]
+        print(f"Number of pages in queue: {self.pages_queue.qsize()}")
 
     def worker(self):
         while True:
@@ -35,6 +36,9 @@ class SnapshotOverTime:
                     print(f"Scraping time {t}, page {page}")
 
                     x = requests.get(f'http://archive.org/wayback/available?url={page}&timestamp={t}')
+                    while x.status_code != 200:  # retry after sleeping
+                        time.sleep(5)
+                        x = requests.get(f'http://archive.org/wayback/available?url={page}&timestamp={t}')
                     metadata_dict = json.loads(x.text)
                     closest_timestamp = metadata_dict[
                         'timestamp']  # think we cam get rid of this since x returns closest in time
@@ -59,10 +63,12 @@ class SnapshotOverTime:
                     Path(page_path).mkdir(parents=True, exist_ok=True)
                     with open(f'{page_path}text.txt', 'w') as f:
                         f.write(txt)
-            except:
+            except Exception as e:
+                print(e)
+                print(f"Broken json for page {page_id}: {x.text}")
                 return
 
-    def run(self, num_workers=1):
+    def run(self, num_workers=2):
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = [executor.submit(self.worker) for _ in range(num_workers)]
 
