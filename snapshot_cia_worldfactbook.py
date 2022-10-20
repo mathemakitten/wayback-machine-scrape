@@ -12,21 +12,19 @@ import json
 from pathlib import Path
 import concurrent.futures
 import time
-from threading import Lock
+
 
 # api = 'http://archive.org/wayback/available?url=example.com'
 
 class SnapshotOverTime:
 
     def __init__(self):
-        self.timestamps = ['20220901', '20220501', '20220601', '20220801']  # internet archive format is YYYYMMDDhhmmss
+        self.timestamps = ['20220901'] #['20220501', '20220601', '20220801']  # internet archive format is YYYYMMDDhhmmss
         with open('/home/helen_huggingface_co/wayback-machine-scrape/links_scraped_cia_world_factbook.txt', 'r') as f:
             pages = set(f.read().split('\n'))
         self.pages_queue = queue.Queue()
-        [self.pages_queue.put(i) for i in pages if i != ' ' and '#' not in i and "images" not in i and 'map' not in i]
+        [self.pages_queue.put(i) for i in pages if i != ' ' and '#' not in i]
         print(f"Number of pages in queue: {self.pages_queue.qsize()}")
-        self.data_clean = []  # make this threadsafe with the data_lock below
-        self.data_lock = Lock()
 
     def worker(self):
         while True:
@@ -57,22 +55,14 @@ class SnapshotOverTime:
 
                     for p in para:
                         if p.name == 'h2':
-                            txt += (f"\n\nTopic: {p.get_text()}\n")
+                            txt += (f"\n\nTopic: {p.get_text()}")
                         else:
                             txt += (f"{p.get_text()}")
 
-                    # page_path = page  # use original url for reproducibility #f"factbook/{t}/{page_id}/"
-
-                    # Write this data to jsonl
-                    self.data_lock.acquire()
-                    self.data_clean.append({'snapshot_date': t, 'url': page, page_id: page_id, 'text': txt})
-                    self.data_lock.release()
-
-                    page_path = f'factbook/{t}/{page_id}'
+                    page_path = f"factbook/{t}/{page_id}/"
                     Path(page_path).mkdir(parents=True, exist_ok=True)
-                    with open(f"{page_path}/text.txt", 'w') as f:
+                    with open(f'{page_path}text.txt', 'w') as f:
                         f.write(txt)
-
             except Exception as e:
                 print(e)
                 print(f"Broken json for page {page_id}: {x.text}")
@@ -82,16 +72,6 @@ class SnapshotOverTime:
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = [executor.submit(self.worker) for _ in range(num_workers)]
 
-        # self.write_data_to_disk_as_json()
-
-    def write_data_to_disk_as_json(self):
-        with open('factbook/data.jsonl', 'w') as f:
-            for d in self.data_clean:
-                print(d)
-                json.dump(d, f)
-                f.write('\n')
-
 
 s = SnapshotOverTime()
 s.run()
-# s.write_data_to_disk_as_json()
