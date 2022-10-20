@@ -54,8 +54,10 @@ class SnapshotOverTime:
                         br.replace_with("\n")
 
                     for p in para:
-                        if p.name == 'h2':
+                        if p.name == "h2":
                             txt += (f"\n\nTopic: {p.get_text()}")
+                        elif p.name == "h3":
+                            txt += (f"\n{p.get_text()}: ")
                         else:
                             txt += (f"{p.get_text()}")
 
