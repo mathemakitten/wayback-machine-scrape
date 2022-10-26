@@ -32,7 +32,7 @@ class SnapshotOverTime:
                 page = self.pages_queue.get(timeout=1)
                 for t in self.timestamps:
                     txt = ""
-                    page_id = page.split('https://www.cia.gov/the-world-factbook/')[-1].replace("/", "-")
+                    page_id = page.rstrip('/').split('https://www.cia.gov/the-world-factbook/')[-1].replace("/", "-")
                     print(f"Scraping time {t}, page {page}")
 
                     x = requests.get(f'http://archive.org/wayback/available?url={page}&timestamp={t}')
