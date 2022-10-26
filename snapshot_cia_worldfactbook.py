@@ -61,9 +61,9 @@ class SnapshotOverTime:
                         else:
                             txt += (f"{p.get_text()}")
 
-                    page_path = f"factbook/{t}/{page_id}/"
+                    page_path = f"factbook/{t}/{page_id}"
                     Path(page_path).mkdir(parents=True, exist_ok=True)
-                    with open(f'{page_path}text.txt', 'w') as f:
+                    with open(f'{page_path}/text.txt', 'w') as f:
                         f.write(txt)
             except Exception as e:
                 print(e)
