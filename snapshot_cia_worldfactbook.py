@@ -23,8 +23,9 @@ class SnapshotOverTime:
         with open('/home/helen_huggingface_co/wayback-machine-scrape/links_scraped_cia_world_factbook.txt', 'r') as f:
             pages = set(f.read().split('\n'))
         self.pages_queue = queue.Queue()
-        [self.pages_queue.put(i) for i in pages if i != ' ' and '#' not in i and "images" not in i and 'map' not in i]
+        [self.pages_queue.put(i) for i in pages if i != ' ' and i != "" and '#' not in i and "images" not in i and 'map' not in i]
         print(f"Number of pages in queue: {self.pages_queue.qsize()}")
+        print(pages)
 
     def worker(self):
         while True:
@@ -70,7 +71,7 @@ class SnapshotOverTime:
                 print(f"Broken json for page {page_id}: {x.text}")
                 return
 
-    def run(self, num_workers=2):
+    def run(self, num_workers=1):
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = [executor.submit(self.worker) for _ in range(num_workers)]
 
