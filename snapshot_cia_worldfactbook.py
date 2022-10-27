@@ -19,7 +19,7 @@ import time
 class SnapshotOverTime:
 
     def __init__(self):
-        self.timestamps = ['20221001', '20220901', '20220501', '20220601', '20220801']  # internet archive format is YYYYMMDDhhmmss
+        self.timestamps = ['20220901', '20220501', '20220601', '20220801']  # internet archive format is YYYYMMDDhhmmss
         with open('/home/helen_huggingface_co/wayback-machine-scrape/links_scraped_cia_world_factbook.txt', 'r') as f:
             pages = set(f.read().split('\n'))
         self.pages_queue = queue.Queue()
