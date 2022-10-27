@@ -23,9 +23,9 @@ class SnapshotOverTime:
         with open('/home/helen_huggingface_co/wayback-machine-scrape/links_scraped_cia_world_factbook.txt', 'r') as f:
             pages = set(f.read().split('\n'))
         self.pages_queue = queue.Queue()
-        [self.pages_queue.put(i) for i in pages if i != ' ' and i != "" and '#' not in i and "images" not in i and 'map' not in i]
+        [self.pages_queue.put(i) for i in pages if i != ' ' and i != "" and '#' not in i and "cover-gallery" not in i and "images" not in i and 'map' not in i]
         print(f"Number of pages in queue: {self.pages_queue.qsize()}")
-        print(pages)
+        # print(pages)
 
     def worker(self):
         while True:
