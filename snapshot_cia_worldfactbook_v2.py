@@ -19,6 +19,7 @@ class SnapshotOverTime:
         self.timestamps = ['20220901', '20220501', '20220601', '20220801']  # internet archive format is YYYYMMDDhhmmss
         with open('/home/helen_huggingface_co/wayback-machine-scrape/links_scraped_cia_world_factbook.txt', 'r') as f:
             pages = set(f.read().split('\n'))
+        # pages = ['https://www.cia.gov/the-world-factbook/countries/turkey-turkiye/']
         self.pages_queue = queue.Queue()
         [self.pages_queue.put(i) for i in pages if i != ' ' and i != ""
          and '#' not in i and "cover-gallery" not in i
@@ -43,18 +44,18 @@ class SnapshotOverTime:
                     snapshot_dates = [item.archive_url.split('/')[4] for item in cdx.snapshots()]
                     snapshots = [item.archive_url for item in cdx.snapshots()]
 
+                    print(snapshots)
                     # print(f"SNAPSHOT DATES: {snapshot_dates}")
                     # find the closest snapshot prior to the current month
                     closest_prior_snapshot = None
                     for d in snapshot_dates[::-1]:
                         if d[:9] < t:
                             closest_prior_snapshot = d
+                            # print(f"closest prior snapshot: {closest_prior_snapshot}")
                             break
                     # if none, just deal
                     if closest_prior_snapshot:
                         snapshot_url = [s for s in snapshots if closest_prior_snapshot in s][0]
-
-                        x = requests.get(snapshot_url)
 
                         # scrape actual snapshot content
                         html = requests.get(snapshot_url).content
@@ -80,7 +81,7 @@ class SnapshotOverTime:
             except Exception as e:
                 print(e)
                 # print(f"Broken json for page {page_id}: {x.text}")
-               return
+                return
 
     def run(self, num_workers=2):
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
