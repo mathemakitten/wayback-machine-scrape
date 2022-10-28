@@ -80,7 +80,7 @@ class SnapshotOverTime:
             except Exception as e:
                 print(e)
                 # print(f"Broken json for page {page_id}: {x.text}")
-                continue
+               return
 
     def run(self, num_workers=2):
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
