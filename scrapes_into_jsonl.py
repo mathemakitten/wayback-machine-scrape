@@ -19,7 +19,7 @@ for date in dates:
             jsondict = {'snapshot_date': date, 'page_id': p, 'text': text}
             data_clean.append(jsondict)
 
-with open('factbook/data.jsonl', 'a') as f:
+with open('data.jsonl', 'a') as f:
     for d in data_clean:
         json.dump(d, f)
         f.write('\n')
